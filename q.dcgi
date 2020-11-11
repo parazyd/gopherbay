@@ -116,7 +116,7 @@ def q(_argv):
     if query[0:10] == "top100:all":
         data = httpget(server + "/precompiled/data_top100_all.json")
     elif query[0:14] == "top100:recent_":
-        data = httpget(server + "/precompiled/data_top100_recent_" + query[14:] + ".json")
+        data = httpget(server + "/precompiled/data_top100_48h_" + query[14:] + ".json")
     elif query[0:13] == "top100:recent":
         data = httpget(server + "/precompiled/data_top100_recent.json")
     elif query[0:7] == "top100:":
