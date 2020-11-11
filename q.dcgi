@@ -8,7 +8,41 @@ from urllib.parse import quote
 from os.path import basename
 from requests import get
 
-server = "https://apibay.org"
+from config import server, categories, btc
+
+def print_boat():
+    print('''
+                                 .                   .
+                              _..-''"""\          _.--'"""\\
+                              |         L         |        \\
+                  _           / _.-.---.\.        / .-.----.\\
+                _/-|---     _/<"---'"""""\\\\`.    /-'--''"""""\\
+               |       \     |            L`.`-. |            L
+               /_.-.---.L    |            \  \  `|            J`.
+             _/--'""""  \    F            \L  \  |             L
+               L      `. L  J  _.---.-"""-.\`. L_/ _.--|"""""--.\ `.
+               |        \+. /-"__.--'""""   \ `./'"---'""""""   \`. `.
+               F   _____ \ `F"        `.     \  \                L `.
+              /.-'"_|---'"\ |           `    JL |                 L  `.`.
+             <-'""         \|    _.-.------._ A J    _.-.-----`.--|   ``.`.
+              L         `. |/.-'"_.-`---'""\."| /-'"---'"""""   \`.\.  \ `.`.
+              |  _.------\.<'"""            L\ L\                `.`\`. \  `.
+         _.-'//'"--'"""   L\|       ________\ `.F     ___.-------._L \ `-\   \`.
+        /___| F             F _.--'"_|-------L  /_.-'"_.-|-'"""""""\  L   L   `.`.
+            | F  _.-'|"""""/'"-'"""          J <'"""                L J   |     `.`.
+            |/-'-''/|""\ )-|\                 F \                   |  L .'"""`\\""-\\\\_
+             F`-'-'-(`-')  | \                F  \                  |___`"""`.""`.-'"
+------------/        `-'---|  F               L   L             __     |"""""`-'"__________
+          .'_         |    |__L          __  J__  |    _.--'""""   `".----'".'
+         '""""""""""""|--._+--F _.-'""||"   """___/.-'"   ||-'"/""""" \_. .'
+         J------------(___\__/'_____.--------'-------'""""""""           /
+         `-.                                        _.__.__.__.____     J_.-._
+    .'`-._ (-`--`---.'--._`---._.-'`-._.-'_.-'``-._'               `-''-'
+
+
+                           === The Gopher Bay ===
+
+''')
 
 def print_size(size):
     if size >= 2**50: return "%.2f PiB" % (size/(2**50))
@@ -19,20 +53,38 @@ def print_size(size):
     return "%s B"
 
 def print_category(cat):
-    return categories.get(cat, "n/a")
+    c = categories.get(cat)
+    if not c: return "n/a"
+    mc = str(cat)[0] + "00"
+    mc = categories.get(int(mc))
+    if not mc: return c
+    return "%s > %s" % (mc, c)
 
 def print_all_categories(top100=False):
-    print("=====================")
-    print("=   Browse Top100   =" if top100 else "= Browse Categories =")
-    print("=====================")
+    if top100:
+        print("-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=[ Browse Top100 ]-=-=-=-=-=--=-=-=-=-=-=-=-=-=-=-")
+    else:
+        print("-=-=-=-=-=-=-=-=-=-=-=-=-=-=[ Browse Categories ]-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=")
     print()
 
     if top100:
-        print("[1|** Total Top100 **|/q.dcgi?top100:all|server|port]")
+        print("[1|Total Top100|/q.dcgi?top100:all|server|port]")
 
     for i in categories:
         if i % 100 == 0:
             print()
+            if i == 100:
+                print("-=-[ Audio ]-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-")
+            elif i == 200:
+                print("-=-[ Video ]-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-")
+            elif i == 300:
+                print("-=-[ Applications ]-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=")
+            elif i == 400:
+                print("-=-[ Games ]-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-")
+            elif i == 500:
+                print("-=-[ Porn ]-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=")
+            elif i == 600:
+                print("-=-[ Other ]-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-")
         print("[1|%s|/q.dcgi?%s:%d|server|port]" % (categories[i],
                             "top100" if top100 else "category", i))
 
@@ -52,7 +104,7 @@ def httpget(url):
     r = get(url)
     return r.text
 
-def main(_argv):
+def q(_argv):
     query = quote(_argv[1] if _argv[1] else _argv[2])
 
     if query[0:10] == "top100:all":
@@ -68,6 +120,10 @@ def main(_argv):
 
     jsondata = loads(data)
 
+    print()
+    print("-=-[ Search Results ]-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=")
+    print()
+
     for i in jsondata:
         magnet = print_magnet(i["info_hash"], quote(i["name"]))
 
@@ -82,65 +138,29 @@ def main(_argv):
         print("[h|Magnet Link: %s|URL:%s|server|port]" % (i["info_hash"], magnet))
         print()
 
-categories = OrderedDict({
-    100: "** Audio **",
-    101: "Audio > Music",
-    102: "Audio > Audio Books",
-    103: "Audio > Sound Clips",
-    104: "Audio > FLAC",
-    199: "Audio > Other",
-    200: "** Video **",
-    201: "Video > Movies",
-    202: "Video > Movies DVDR",
-    203: "Video > Music Videos",
-    204: "Video > Movie Clips",
-    205: "Video > TV-Shows",
-    206: "Video > Handheld",
-    207: "Video > HD Movies",
-    208: "Video > HD TV-Shows",
-    209: "Video > 3D",
-    299: "Video > Other",
-    300: "** Applications **",
-    301: "Applications > Windows",
-    302: "Applications > Mac/Apple",
-    303: "Applications > UNIX",
-    304: "Applications > Handheld",
-    305: "Applications > IOS(iPad/iPhone)",
-    306: "Applications > Android",
-    399: "Applications > Other OS",
-    400: "** Games **",
-    401: "Games > PC",
-    402: "Games > Mac/Apple",
-    403: "Games > PSx",
-    404: "Games > XBOX360",
-    405: "Games > Wii",
-    406: "Games > Handheld",
-    407: "Games > IOS(iPad/iPhone)",
-    408: "Games > Android",
-    499: "Games > Other OS",
-    500: "** Porn **",
-    501: "Porn > Movies",
-    502: "Porn > Movies DVDR",
-    503: "Porn > Pictures",
-    504: "Porn > Games",
-    505: "Porn > HD-Movies",
-    506: "Porn > Movie Clips",
-    599: "Porn > Other",
-    600: "** Other **",
-    601: "Other > E-books",
-    602: "Other > Comics",
-    603: "Other > Pictures",
-    604: "Other > Covers",
-    605: "Other > Physibles",
-    699: "Other > Other",
-})
+def print_index():
+    print("-=-[ Pirate Search ]-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=")
+    print("[7|Search torrents|/q.dcgi?|server|port]")
+    print("[1|Browse torrents|/browse.dcgi|server|port]")
+    print("[1|Recent torrents|/q.dcgi?top100:recent|server|port]")
+    print("[1|Top 100|/top.dcgi|server|port]")
+    print()
+    print("-=-[ About ]-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-")
+    print("[h|Donate BTC: %s|URL:bitcoin:%s|server|port]" % (btc, btc))
+    print()
+
 
 if __name__ == "__main__":
-    if basename(argv[0]) == "q.dcgi":
-        main(argv)
+    if basename(argv[0]) == "index.dcgi":
+        print_boat()
+        print_index()
+    elif basename(argv[0]) == "q.dcgi":
+        q(argv)
     elif basename(argv[0]) == "top.dcgi":
+        print_boat()
         print_all_categories(top100=True)
     elif basename(argv[0]) == "browse.dcgi":
+        print_boat()
         print_all_categories()
     else:
         print("Internal error.")
