@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # Beerware License, parazyd <parazyd@dyne.org>
 
+from syslog import syslog
 from collections import OrderedDict
 from json import loads
 from sys import argv
@@ -105,7 +106,7 @@ def httpget(url):
     return r.text
 
 def q(_argv):
-    query = quote(_argv[1] if _argv[1] else _argv[2])
+    query = _argv[1] if _argv[1] else _argv[2]
 
     if query[0:10] == "top100:all":
         data = httpget(server + "/precompiled/data_top100_all.json")
@@ -116,7 +117,7 @@ def q(_argv):
     elif query[0:7] == "top100:":
         data = httpget(server + "/precompiled/data_top100_" + query[7:] + ".json")
     else:
-        data = httpget(server + "/q.php?q=" + query)
+        data = httpget(server + "/q.php?q=" + quote(query))
 
     jsondata = loads(data)
 
