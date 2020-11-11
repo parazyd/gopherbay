@@ -10,6 +10,7 @@ from requests import get
 
 from config import server, categories, btc
 
+
 def print_boat():
     print('''
                                  .                   .
@@ -44,6 +45,7 @@ def print_boat():
 
 ''')
 
+
 def print_size(size):
     if size >= 2**50: return "%.2f PiB" % (size/(2**50))
     if size >= 2**40: return "%.2f TiB" % (size/(2**40))
@@ -51,6 +53,7 @@ def print_size(size):
     if size >= 2**20: return "%.2f MiB" % (size/(2**20))
     if size >= 2**10: return "%.2f KiB" % (size/(2**10))
     return "%s B"
+
 
 def print_category(cat):
     c = categories.get(cat)
@@ -60,12 +63,12 @@ def print_category(cat):
     if not mc: return c
     return "%s > %s" % (mc, c)
 
+
 def print_all_categories(top100=False, recent=False):
     if top100:
         print("-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=[ Browse Top100 ]-=-=-=-=-=--=-=-=-=-=-=-=-=-=-=-")
     else:
         print("-=-=-=-=-=-=-=-=-=-=-=-=-=-=[ Browse Categories ]-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=")
-    print()
 
     if top100 and not recent:
         print("[1|Total Top100|/q.dcgi?top100:all|server|port]")
@@ -94,8 +97,10 @@ def print_all_categories(top100=False, recent=False):
         else:
             print("[1|%s|/q.dcgi?%s:%d|server|port]" % (categories[i], "category", i))
 
+
 def print_magnet(ihash, name):
     return "magnet:?xt=urn:btih:%s&dn%s%s" % (ihash, quote(name), print_trackers())
+
 
 def print_trackers():
     trs = "&tr=".join((
@@ -106,9 +111,11 @@ def print_trackers():
         quote("udp://tracker.leechers-paradise.org:6969/announce")))
     return "&tr=%s" % trs
 
+
 def httpget(url):
     r = get(url)
     return r.text
+
 
 def q(_argv):
     query = _argv[1] if _argv[1] else _argv[2]
@@ -130,24 +137,29 @@ def q(_argv):
 
     jsondata = loads(data)
 
-    print()
-    print("-=-[ Search Results ]-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=")
-    print()
+    print("\n-=-[ Search Results ]-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=\n")
 
     for i in jsondata:
+        name = i.get("name")
+        seeders = int(i.get("seeders"))
+        leechers = int(i.get("leechers"))
+        files = int(i.get("num_files"))
+        size = print_size(int(i.get("size")))
+        time = strftime("%Y-%m-%d %H:%M:%S", gmtime(int(i.get("added"))))
+        category_name = print_category(int(i.get("category")))
+        category = int(i.get("category"))
+        username = i.get("username")
+        status = i.get("status")
+        ih = i.get("info_hash")
         magnet = print_magnet(i["info_hash"], quote(i["name"]))
 
-        print("Name: %s" % (i["name"]))
-        print("Seeders: %s | Leechers: %s | Files: %d | Size: %s" %
-            (i["seeders"], i["leechers"], int(i["num_files"]),
-            print_size(int(i["size"]))))
-        print("Uploaded: %s" % (strftime("%Y-%m-%d %H:%M:%S", gmtime(int(i["added"])))))
-        print("[1|Category: %s|/q.dcgi?category:%d|server|port]" %
-            (print_category(int(i["category"])), int(i["category"])))
-        print("[1|Uploader: %s (%s)|/q.dcgi?user:%s|server|port]" %
-            (i["username"], i["status"], i["username"]))
-        print("[h|Magnet Link: %s|URL:%s|server|port]" % (i["info_hash"], magnet))
-        print()
+        print("\nName: %s" % name)
+        print("Seeders: %d | Leechers: %d | Files: %d | Size: %s" % (seeders, leechers, files, size))
+        print("Uploaded: %s" % time)
+        print("[1|Category: %s|/q.dcgi?category:%d|server|port]" % (category_name, category))
+        print("[1|Uploader: %s (%s)|/q.dcgi?user:%s|server|port]" % (username, status, username))
+        print("[h|Magnet Link: %s|URL:%s|server|port]" % (ih, magnet))
+
 
 def print_index():
     print("-=-[ Pirate Search ]-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=")
@@ -156,10 +168,8 @@ def print_index():
     print("[1|Recent torrents|/q.dcgi?top100:recent|server|port]")
     print("[1|Top 100|/top.dcgi|server|port]")
     print("[1|Top 100 (48h)|/top48.dcgi|server|port]")
-    print()
-    print("-=-[ About ]-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-")
-    print("[h|Donate BTC: %s|URL:bitcoin:%s|server|port]" % (btc, btc))
-    print()
+    print("\n-=-[ About ]-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-")
+    print("[h|Donate BTC: %s|URL:bitcoin:%s|server|port]\n" % (btc, btc))
 
 
 if __name__ == "__main__":
@@ -167,6 +177,7 @@ if __name__ == "__main__":
         print_boat()
         print_index()
     elif basename(argv[0]) == "q.dcgi":
+        print_boat()
         q(argv)
     elif basename(argv[0]) == "top.dcgi":
         print_boat()
