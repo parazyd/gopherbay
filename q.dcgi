@@ -1,10 +1,9 @@
 #!/usr/bin/env python3
 # Beerware License, parazyd <parazyd@dyne.org>
 
-from syslog import syslog
-from collections import OrderedDict
 from json import loads
 from sys import argv
+from time import strftime, gmtime
 from urllib.parse import quote
 from os.path import basename
 from requests import get
@@ -61,15 +60,17 @@ def print_category(cat):
     if not mc: return c
     return "%s > %s" % (mc, c)
 
-def print_all_categories(top100=False):
+def print_all_categories(top100=False, recent=False):
     if top100:
         print("-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=[ Browse Top100 ]-=-=-=-=-=--=-=-=-=-=-=-=-=-=-=-")
     else:
         print("-=-=-=-=-=-=-=-=-=-=-=-=-=-=[ Browse Categories ]-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=")
     print()
 
-    if top100:
+    if top100 and not recent:
         print("[1|Total Top100|/q.dcgi?top100:all|server|port]")
+    elif top100 and recent:
+        print("[1|Total Top100 (48h)|/q.dcgi?top100:recent|server|port]")
 
     for i in categories:
         if i % 100 == 0:
@@ -86,8 +87,12 @@ def print_all_categories(top100=False):
                 print("-=-[ Porn ]-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=")
             elif i == 600:
                 print("-=-[ Other ]-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-")
-        print("[1|%s|/q.dcgi?%s:%d|server|port]" % (categories[i],
-                            "top100" if top100 else "category", i))
+        if top100 and not recent:
+            print("[1|%s|/q.dcgi?%s:%d|server|port]" % (categories[i], "top100", i))
+        elif top100 and recent:
+            print("[1|%s (48h)|/q.dcgi?%s_%d|server|port]" % (categories[i], "top100:recent", i))
+        else:
+            print("[1|%s|/q.dcgi?%s:%d|server|port]" % (categories[i], "category", i))
 
 def print_magnet(ihash, name):
     return "magnet:?xt=urn:btih:%s&dn%s%s" % (ihash, quote(name), print_trackers())
@@ -132,6 +137,7 @@ def q(_argv):
         print("Seeders: %s | Leechers: %s | Files: %d | Size: %s" %
             (i["seeders"], i["leechers"], int(i["num_files"]),
             print_size(int(i["size"]))))
+        print("Uploaded: %s" % (strftime("%Y-%m-%d %H:%M:%S", gmtime(int(i["added"])))))
         print("[1|Category: %s|/q.dcgi?category:%d|server|port]" %
             (print_category(int(i["category"])), int(i["category"])))
         print("[1|Uploader: %s (%s)|/q.dcgi?user:%s|server|port]" %
@@ -145,6 +151,7 @@ def print_index():
     print("[1|Browse torrents|/browse.dcgi|server|port]")
     print("[1|Recent torrents|/q.dcgi?top100:recent|server|port]")
     print("[1|Top 100|/top.dcgi|server|port]")
+    print("[1|Top 100 (48h)|/top48.dcgi|server|port]")
     print()
     print("-=-[ About ]-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-")
     print("[h|Donate BTC: %s|URL:bitcoin:%s|server|port]" % (btc, btc))
@@ -160,6 +167,9 @@ if __name__ == "__main__":
     elif basename(argv[0]) == "top.dcgi":
         print_boat()
         print_all_categories(top100=True)
+    elif basename(argv[0]) == "top48.dcgi":
+        print_boat()
+        print_all_categories(top100=True, recent=True)
     elif basename(argv[0]) == "browse.dcgi":
         print_boat()
         print_all_categories()
