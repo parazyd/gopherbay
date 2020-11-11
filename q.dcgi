@@ -1,0 +1,146 @@
+#!/usr/bin/env python3
+# Beerware License, parazyd <parazyd@dyne.org>
+
+from collections import OrderedDict
+from json import loads
+from sys import argv
+from urllib.parse import quote
+from os.path import basename
+from requests import get
+
+server = "https://apibay.org"
+
+def print_size(size):
+    if size >= 2**50: return "%.2f PiB" % (size/(2**50))
+    if size >= 2**40: return "%.2f TiB" % (size/(2**40))
+    if size >= 2**30: return "%.2f GiB" % (size/(2**30))
+    if size >= 2**20: return "%.2f MiB" % (size/(2**20))
+    if size >= 2**10: return "%.2f KiB" % (size/(2**10))
+    return "%s B"
+
+def print_category(cat):
+    return categories.get(cat, "n/a")
+
+def print_all_categories(top100=False):
+    print("=====================")
+    print("=   Browse Top100   =" if top100 else "= Browse Categories =")
+    print("=====================")
+    print()
+
+    if top100:
+        print("[1|** Total Top100 **|/q.dcgi?top100:all|server|port]")
+
+    for i in categories:
+        if i % 100 == 0:
+            print()
+        print("[1|%s|/q.dcgi?%s:%d|server|port]" % (categories[i],
+                            "top100" if top100 else "category", i))
+
+def print_magnet(ihash, name):
+    return "magnet:?xt=urn:btih:%s&dn%s%s" % (ihash, quote(name), print_trackers())
+
+def print_trackers():
+    trs = "&tr=".join((
+        quote("udp://tracker.coppersurfer.tk:6969/announce"),
+        quote("udp://9.rarbg.me:2850/announce"),
+        quote("udp://9.rarbg.to:2920/announce"),
+        quote("udp://tracker.opentrackr.org:1337"),
+        quote("udp://tracker.leechers-paradise.org:6969/announce")))
+    return "&tr=%s" % trs
+
+def httpget(url):
+    r = get(url)
+    return r.text
+
+def main(_argv):
+    query = quote(_argv[1] if _argv[1] else _argv[2])
+
+    if query[0:10] == "top100:all":
+        data = httpget(server + "/precompiled/data_top100_all.json")
+    elif query[0:14] == "top100:recent_":
+        data = httpget(server + "/precompiled/data_top100_recent_" + query[14:] + ".json")
+    elif query[0:13] == "top100:recent":
+        data = httpget(server + "/precompiled/data_top100_recent.json")
+    elif query[0:7] == "top100:":
+        data = httpget(server + "/precompiled/data_top100_" + query[7:] + ".json")
+    else:
+        data = httpget(server + "/q.php?q=" + query)
+
+    jsondata = loads(data)
+
+    for i in jsondata:
+        magnet = print_magnet(i["info_hash"], quote(i["name"]))
+
+        print("Name: %s" % (i["name"]))
+        print("Seeders: %s | Leechers: %s | Files: %d | Size: %s" %
+            (i["seeders"], i["leechers"], int(i["num_files"]),
+            print_size(int(i["size"]))))
+        print("[1|Category: %s|/q.dcgi?category:%d|server|port]" %
+            (print_category(int(i["category"])), int(i["category"])))
+        print("[1|Uploader: %s (%s)|/q.dcgi?user:%s|server|port]" %
+            (i["username"], i["status"], i["username"]))
+        print("[h|Magnet Link: %s|URL:%s|server|port]" % (i["info_hash"], magnet))
+        print()
+
+categories = OrderedDict({
+    100: "** Audio **",
+    101: "Audio > Music",
+    102: "Audio > Audio Books",
+    103: "Audio > Sound Clips",
+    104: "Audio > FLAC",
+    199: "Audio > Other",
+    200: "** Video **",
+    201: "Video > Movies",
+    202: "Video > Movies DVDR",
+    203: "Video > Music Videos",
+    204: "Video > Movie Clips",
+    205: "Video > TV-Shows",
+    206: "Video > Handheld",
+    207: "Video > HD Movies",
+    208: "Video > HD TV-Shows",
+    209: "Video > 3D",
+    299: "Video > Other",
+    300: "** Applications **",
+    301: "Applications > Windows",
+    302: "Applications > Mac/Apple",
+    303: "Applications > UNIX",
+    304: "Applications > Handheld",
+    305: "Applications > IOS(iPad/iPhone)",
+    306: "Applications > Android",
+    399: "Applications > Other OS",
+    400: "** Games **",
+    401: "Games > PC",
+    402: "Games > Mac/Apple",
+    403: "Games > PSx",
+    404: "Games > XBOX360",
+    405: "Games > Wii",
+    406: "Games > Handheld",
+    407: "Games > IOS(iPad/iPhone)",
+    408: "Games > Android",
+    499: "Games > Other OS",
+    500: "** Porn **",
+    501: "Porn > Movies",
+    502: "Porn > Movies DVDR",
+    503: "Porn > Pictures",
+    504: "Porn > Games",
+    505: "Porn > HD-Movies",
+    506: "Porn > Movie Clips",
+    599: "Porn > Other",
+    600: "** Other **",
+    601: "Other > E-books",
+    602: "Other > Comics",
+    603: "Other > Pictures",
+    604: "Other > Covers",
+    605: "Other > Physibles",
+    699: "Other > Other",
+})
+
+if __name__ == "__main__":
+    if basename(argv[0]) == "q.dcgi":
+        main(argv)
+    elif basename(argv[0]) == "top.dcgi":
+        print_all_categories(top100=True)
+    elif basename(argv[0]) == "browse.dcgi":
+        print_all_categories()
+    else:
+        print("Internal error.")
