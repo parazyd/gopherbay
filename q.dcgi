@@ -124,6 +124,10 @@ def q(_argv):
     else:
         data = httpget(server + "/q.php?q=" + quote(query))
 
+    if not data:
+        print("Internal error")
+        return
+
     jsondata = loads(data)
 
     print()
