@@ -5,8 +5,9 @@ from collections import OrderedDict
 
 server = "https://apibay.org"
 
-btc = "1Jexqn23JAiyCCFY3pvncuDkA3EiNn3Bst"
+btc = "bc1q2c462lgwnzx929wdpn3zj9rgyfhw2fw2ertw56"
 xmr = "43Tj3TCzxH5E2ZEBCRmgJy2oxH5sXuHuGdYtGxU94gdXM8ujxgPLXDo9YAkufo5tAwfTHGswUVJxw1riMUDQAxJn9x73J5a"
+zec = "zs1vjaapkjsd7rdheprsvmh2zuxg3pvwqy82vxxw6krpny4xudf9wdfv46laa5pt65ehqf32r3ue5p"
 
 categories = OrderedDict({
     100: "Audio",

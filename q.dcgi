@@ -8,7 +8,7 @@ from urllib.parse import quote
 from os.path import basename
 from requests import get
 
-from config import server, categories, btc, xmr
+from config import server, categories, btc, xmr, zec
 
 
 def print_boat():
@@ -170,7 +170,8 @@ def print_index():
     print("[1|Top 100 (48h)|/top48.dcgi|server|port]")
     print("\n-=-[ About ]-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-")
     print("[h|Donate BTC: %s|URL:bitcoin:%s|server|port]" % (btc, btc))
-    print("[h|Donate XMR: %s|URL:monero:%s|server|port]\n" % (xmr, xmr))
+    print("[h|Donate XMR: %s|URL:monero:%s|server|port]" % (xmr, xmr))
+    print("[h|Donate ZEC: %s|URL:zcash:%s|server|port]\n" % (zec, zec))
 
 
 if __name__ == "__main__":
