@@ -137,6 +137,8 @@ def q(_argv):
 
     jsondata = loads(data)
 
+    print("\n[7|Search again.|/q.dcgi?|server|port]")
+
     print("\n-=-[ Search Results ]-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=\n")
 
     for i in jsondata:
