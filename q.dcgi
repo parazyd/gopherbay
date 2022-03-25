@@ -12,7 +12,7 @@ from config import server, categories, btc, xmr, zec
 
 
 def print_boat():
-    print('''
+    print(r'''
                                  .                   .
                               _..-''"""\          _.--'"""\\
                               |         L         |        \\
