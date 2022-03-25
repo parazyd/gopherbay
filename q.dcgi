@@ -103,12 +103,16 @@ def print_magnet(ihash, name):
 
 
 def print_trackers():
-    trs = "&tr=".join((
-        quote("udp://tracker.coppersurfer.tk:6969/announce"),
-        quote("udp://9.rarbg.me:2850/announce"),
-        quote("udp://9.rarbg.to:2920/announce"),
-        quote("udp://tracker.opentrackr.org:1337"),
-        quote("udp://tracker.leechers-paradise.org:6969/announce")))
+    trs = "&tr=".join((quote("udp://tracker.coppersurfer.tk:6969/announce"),
+                       quote("udp://tracker.openbittorrent.com:6969/announce"),
+                       quote("udp://9.rarbg.to:2710/announce"),
+                       quote("udp://9.rarbg.me:2780/announce"),
+                       quote("udp://9.rarbg.to:2730/announce"),
+                       quote("udp://tracker.opentrackr.org:1337"),
+                       quote("http://p4p.arenabg.com:1337/announce"),
+                       quote("udp://tracker.torrent.eu.org:451/announce"),
+                       quote("udp://tracker.tiny-vps.com:6969/announce"),
+                       quote("udp://open.stealth.si:80/announce")))
     return "&tr=%s" % trs
 
 
